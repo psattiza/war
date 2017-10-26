@@ -1,0 +1,32 @@
+//to compile: dot -Tpng game.dot -o game.png
+digraph game {
+      start -> roundStart [label="N players each with equivalent set of cards"]
+      roundStart -> cardsPlayed [label="Pick a card"];
+
+      cardsPlayed -> w [label="Played the only max card"];
+      cardsPlayed -> t [label="Played one of the max cards"];
+      cardsPlayed -> l [label="Played losing card"];
+
+      w -> afterRound[label="Gather pot"];
+      l -> afterRound[label="Try not to cry"];
+      t -> TODO [label="TODO"];
+
+      afterRound -> emptyHand [label="No cards in hand"];
+      afterRound -> checkWin [label="At least one card in hand"];
+      emptyHand -> out [label="No cards in wins"];
+      emptyHand -> checkWin [label="1+ cards in wins, hand <- wins"];
+      checkWin -> win [label="Only player with cards"] 
+      checkWin -> roundStart [label="1+ players with cards"] 
+
+      start [shape = none, style=invis]
+      roundStart [shape = circle]
+      cardsPlayed[shape = circle]
+      w [shape = circle]
+      t [shape = circle]
+      l [shape = circle]
+      afterRound [shape = circle]
+      emptyHand [shape = circle]
+      checkWin [shape = circle]
+      out [shape = doublecircle]
+      win [shape = doublecircle]
+}

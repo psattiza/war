@@ -163,3 +163,8 @@ TSWLatexianTemp*
 *.pyc
 *.pyo
 __pycache__
+
+#swap
+*.swp
+
+doc/game.png
