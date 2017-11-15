@@ -3,7 +3,7 @@ from random import Random
 class Player:
     amount_of_me = 0
     def __init__(self, name=None):
-        if not Name:
+        if not name:
             self.amount_of_me += 1
             self.name = "{}{}".format(
                 self.__class__.__name__,
@@ -55,6 +55,27 @@ class HumanPlayer(Player):
             )
             print("Here is your hand:")
             print(" " * 3, ', '.join(map(str, self.hand)))
+            try:
+                idxs = [self.hand.index(int(v))
+                        for v in input(
+                            "Which 3 card do you choose to discard (e.g., 1, 4, 5)? "
+                        ).split(",")]
+                if
+                break
+            except ValueError:
+                print("That's not a valid choice, ya dummie!")
 
+
+        while True:
+            print()
+            print("Here is your hand:")
+            print(" " * 3, ', '.join(map(str, self.hand)))
+            try:
+                choice = int(input("Which card do you choose to play? "))
+                idx = self.hand.index(choice)
+            except ValueError:
+                print("That's not a valid choice, dummie!")
+                continue
+            return idxs, idx
 
 
