@@ -47,35 +47,30 @@ class HumanPlayer(Player):
     def choosetie(self, players):
         print("==> {} <==".format(self.name))
         # we know the hand must be sorted already
-        while True:
-            print()
-            print("There was a tie between you and {} other player{}.".format(
-                    len(players), "s" if players != 1 else ""
-                )
+        h = self.hand[:]
+        idxs = []
+        print()
+        print("There was a tie between you and {} other player{}.".format(
+                len(players), "s" if players != 1 else ""
             )
+        )
+        for prompt in ("Choose the first card to discard: ",
+                       "Choose the second card to discard: ",
+                       "Choose the third card to discard: ",
+                       "Choose your play: "):
             print("Here is your hand:")
-            print(" " * 3, ', '.join(map(str, self.hand)))
-            try:
-                idxs = [self.hand.index(int(v))
-                        for v in input(
-                            "Which 3 card do you choose to discard (e.g., 1, 4, 5)? "
-                        ).split(",")]
-                if
-                break
-            except ValueError:
-                print("That's not a valid choice, ya dummie!")
-
-
-        while True:
-            print()
-            print("Here is your hand:")
-            print(" " * 3, ', '.join(map(str, self.hand)))
-            try:
-                choice = int(input("Which card do you choose to play? "))
-                idx = self.hand.index(choice)
-            except ValueError:
-                print("That's not a valid choice, dummie!")
-                continue
-            return idxs, idx
-
+            print(" " * 3, ', '.join(
+                ("\x1B[34m{}\x1B[0m" if th is not None else "\x1B[33m{}\x1B[0m").format(rh)
+                for th, rh in zip(h, self.hand))
+            )
+            while True:
+                try:
+                    choice = int(input(prompt))
+                    idx = h.index(choice)
+                    break
+                except ValueError:
+                    print("That's not a valid choice, dummie!")
+            h[idx] = None
+            idxs.append(idx)
+        return idxs[:-1], idxs[-1]
 
