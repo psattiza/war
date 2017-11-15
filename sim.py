@@ -1,4 +1,5 @@
 from random import Random
+from itertools import count
 
 class Player:
     amount_of_me = 0
@@ -73,4 +74,33 @@ class HumanPlayer(Player):
             h[idx] = None
             idxs.append(idx)
         return idxs[:-1], idxs[-1]
+
+class InvalidMoveError(Exception):
+    pass
+
+def play_game(players, logger=print):
+    for rnd in count(0):
+        players_in_round = [p for p in players if p.hand]
+        logger("Start of Round {}. Remaining players: {}.".format(
+            rnd, ', '.join(p.name for p in players_in_round)
+        ))
+        if len(players_in_round) < 2:
+            logger("Less than two players remain. End of game.")
+            break
+
+        # Ask each player for their card of choice
+        choices = {}
+        for p in players_in_round:
+            idx = p.chooseone()
+            if idx not in range(len(p.hand)):
+                raise InvalidMoveError
+            logger("Player {} selects the {} at index {}.".format(
+                p.name, p.hand[idx], idx
+            ))
+            choices[p] = idx
+
+        # Next, remove the cards from each hand and build the pot
+        pot = []
+        for p, idx in choices.items():
+            pot.append((p, p.hand.pop(idx)))
 
