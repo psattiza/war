@@ -1,3 +1,4 @@
+import heapq
 from random import Random
 from itertools import count
 
@@ -24,15 +25,47 @@ class DummiePlayer(Player):
         self.rngchoose = rngchoose
         self.rngtie = rngtie
 
-    def chooseone(self):
+    def chooseone(self, players):
         return self.rngchoose.randrange(len(self.hand))
 
     def choosetie(self, players):
         selection = self.rngtie.sample(range(len(self.hand)), 4)
         return selection[:-1], selection[-1]
 
+class SimpleMindedPlayer(Player):
+    def chooseone(self, players):
+        self.hand.sort()
+        max_of_all = max(max(p.hand) for p in players)
+        max_of_me = self.hand[-1]
+        if max_of_me > max_of_all:
+            for i, card in enumerate(self.hand):
+                if card > max_of_all:
+                    return i
+        if max_of_me == max_of_all and len(self.hand) >= 5:
+            return len(self.hand) - 1
+        return 0
+
+    def choosetie(self, players):
+        if not any(p.hand for p in players):
+            # we win this one no matter what happens
+            return [0, 1, 2], 3
+        upper_hand = self.hand[3:]
+        max_of_all = max(max(p.hand) for p in players if p.hand)
+        max_of_me = self.hand[-1]
+        if max_of_me > max_of_all:
+            for i, card in enumerate(upper_hand):
+                if card > max_of_all:
+                    break
+            return [0, 1, 2], 3 + i
+        if max_of_me == max_of_all and len(upper_hand) >= 5:
+            lookahead_max = max(heapq.nlargest(2, p.hand)[1] for p in players)
+            my_next_best = heapq.nlargest(2, upper_hand)[1]
+            if my_next_best >= lookahead_max:
+                return [0, 1, 2], len(self.hand) - 1
+        return [0, 1, 2], 3
+
 class HumanPlayer(Player):
-    def chooseone(self):
+    def chooseone(self, players):
         print("==> {} <==".format(self.name))
         self.hand.sort()
         while True:
@@ -101,7 +134,7 @@ def play_game(players, logger=print):
         # Ask each player for their card of choice
         choices = []
         for p in players_in_round:
-            idx = p.chooseone()
+            idx = p.chooseone(players_in_round)
             if idx not in range(len(p.hand)):
                 raise InvalidMoveError
             logger("{} selects the {} at index {}.".format(
