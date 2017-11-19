@@ -1,6 +1,8 @@
 import heapq
 from random import Random
 from itertools import count
+from threading import Lock
+from concurrent.futures import ThreadPoolExecutor
 
 class Player:
     amount_of_me = 0
@@ -65,56 +67,58 @@ class SimpleMindedPlayer(Player):
         return [0, 1, 2], 3
 
 class HumanPlayer(Player):
-    def chooseone(self, players):
-        print("==> {} <==".format(self.name))
-        self.hand.sort()
-        while True:
-            print()
-            if self.wins:
-                print("Here is your wins pile (you cannot play now):")
-                print(" " * 3, ', '.join(map(str, self.wins)))
-                print()
-            print("Here is your hand:")
-            print(" " * 3, ', '.join(map(str, self.hand)))
-            print()
-            try:
-                choice = int(input("Which card do you choose? "))
-                idx = self.hand.index(choice)
-            except ValueError:
-                print("That's not a valid choice, dummie!")
-                continue
-            return idx
+    io_lock = Lock()
 
-    def choosetie(self, players):
-        print("==> {} <==".format(self.name))
-        # we know the hand must be sorted already
-        h = self.hand[:]
-        idxs = []
-        print()
-        print("There was a tie between you and {} other player{}.".format(
-                len(players), "s" if players != 1 else ""
-            )
-        )
-        for prompt in ("Choose the first card to discard: ",
-                       "Choose the second card to discard: ",
-                       "Choose the third card to discard: ",
-                       "Choose your play: "):
-            print()
-            print("Here is your hand:")
-            print(" " * 3, ', '.join(
-                ("\x1B[34m{}\x1B[0m" if th is not None else "\x1B[33m{}\x1B[0m").format(rh)
-                for th, rh in zip(h, self.hand))
-            )
-            print()
+    def chooseone(self, players):
+        self.hand.sort()
+        with self.io_lock:
+            print("==> {} <==".format(self.name))
             while True:
+                print()
+                if self.wins:
+                    print("Here is your wins pile (you cannot play now):")
+                    print(" " * 3, ', '.join(map(str, self.wins)))
+                    print()
+                print("Here is your hand:")
+                print(" " * 3, ', '.join(map(str, self.hand)))
+                print()
                 try:
-                    choice = int(input(prompt))
-                    idx = h.index(choice)
-                    break
+                    choice = int(input("Which card do you choose? "))
+                    idx = self.hand.index(choice)
+                    return idx
                 except ValueError:
                     print("That's not a valid choice, dummie!")
-            h[idx] = None
-            idxs.append(idx)
+
+    def choosetie(self, players):
+        with self.io_lock:
+            print("==> {} <==".format(self.name))
+            h = self.hand[:]
+            idxs = []
+            print()
+            print("There was a tie between you and {} other player{}.".format(
+                    len(players), "s" if players != 1 else ""
+                )
+            )
+            for prompt in ("Choose the first card to discard: ",
+                           "Choose the second card to discard: ",
+                           "Choose the third card to discard: ",
+                           "Choose your play: "):
+                print()
+                print("Here is your hand:")
+                print(" " * 3, ', '.join(
+                    ("\x1B[34m{}\x1B[0m" if th is not None else "\x1B[33m{}\x1B[0m").format(rh)
+                    for th, rh in zip(h, self.hand))
+                )
+                print()
+                while True:
+                    try:
+                        choice = int(input(prompt))
+                        idx = h.index(choice)
+                        break
+                    except ValueError:
+                        print("That's not a valid choice, dummie!")
+                h[idx] = None
+                idxs.append(idx)
         return idxs[:-1], idxs[-1]
 
 class InvalidMoveError(Exception):
@@ -122,6 +126,7 @@ class InvalidMoveError(Exception):
 
 def play_game(players, logger=print):
     carry_pot = []
+    executor = ThreadPoolExecutor()
     for rnd in count(0):
         players_in_round = [p for p in players if p.hand]
         logger("Start of Round {}. Remaining players: {}.".format(
@@ -132,9 +137,13 @@ def play_game(players, logger=print):
             break
 
         # Ask each player for their card of choice
-        choices = []
+        choice_f = []
         for p in players_in_round:
-            idx = p.chooseone(players_in_round)
+            choice_f.append((p, executor.submit(p.chooseone, players_in_round)))
+
+        choices = []
+        for p, idx_future in choice_f:
+            idx = idx_future.result()
             if idx not in range(len(p.hand)):
                 raise InvalidMoveError
             choices.append((p, idx))
@@ -158,16 +167,16 @@ def play_game(players, logger=print):
         while len(winners) > 1:
             logger("It's a tie!")
             choices = []
+            choice_f = []
 
             for p in winners:
                 if len(p.hand) < 4:
-                    logger(
-                        "{} does not have enough cards to compete in this tie-breaker... "
-                        "they will have to discard their whole hand.".format(p.name)
-                    )
                     choices.append((p, list(range(len(p.hand))), None))
                     continue
-                discard_idxs, choice_idx = p.choosetie([w for w in winners if w != p])
+                choice_f.append((p, executor.submit(p.choosetie, [w for w in winners if w != p])))
+
+            for p, future in choice_f:
+                discard_idxs, choice_idx = future.result()
                 if (any(idx not in range(len(p.hand))
                         for idx in discard_idxs + [choice_idx])
                     or len(set(discard_idxs + [choice_idx])) != 4):
@@ -178,6 +187,10 @@ def play_game(players, logger=print):
             m = 0
             for p, discard_idxs, choice_idx in choices:
                 if choice_idx is None:
+                    logger(
+                        "{} does not have enough cards to compete in this tie-breaker... "
+                        "they will have to discard their whole hand.".format(p.name)
+                    )
                     idxs = discard_idxs
                 else:
                     logger("{} discards indexes {} and selects the {} at index {}.".format(
@@ -215,6 +228,7 @@ def play_game(players, logger=print):
                     logger("{} gathers their wins pile with {} cards.".format(p.name, len(p.wins)))
                     p.hand = p.wins
                     p.wins = []
+    executor.shutdown()
     if len(players_in_round) == 1:
         p = players_in_round[0]
         logger("Congrats to {}, the winner of the game!".format(p.name))
