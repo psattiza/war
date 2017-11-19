@@ -137,9 +137,6 @@ def play_game(players, logger=print):
             idx = p.chooseone(players_in_round)
             if idx not in range(len(p.hand)):
                 raise InvalidMoveError
-            logger("{} selects the {} at index {}.".format(
-                p.name, p.hand[idx], idx
-            ))
             choices.append((p, idx))
 
         # Next, remove the cards from each hand and build the pot
@@ -148,6 +145,7 @@ def play_game(players, logger=print):
         m = 0
         for p, idx in choices:
             card = p.hand.pop(idx)
+            logger("{} selects the {} at index {}.".format(p.name, card, idx))
             if card > m:
                 m = card
             pot.append((p, card))
@@ -174,15 +172,18 @@ def play_game(players, logger=print):
                         for idx in discard_idxs + [choice_idx])
                     or len(set(discard_idxs + [choice_idx])) != 4):
                     raise InvalidMoveError
-                logger("{} discards indexes {} and selects the {} at index {}.".format(
-                    p.name, discard_idxs, p.hand[choice_idx], choice_idx
-                ))
                 choices.append((p, discard_idxs, choice_idx))
 
             pot = []
             m = 0
             for p, discard_idxs, choice_idx in choices:
-                idxs = discard_idxs if choice_idx is None else discard_idxs + [choice_idx]
+                if choice_idx is None:
+                    idxs = discard_idxs
+                else:
+                    logger("{} discards indexes {} and selects the {} at index {}.".format(
+                        p.name, discard_idxs, p.hand[choice_idx], choice_idx
+                    ))
+                    idxs = discard_idxs + [choice_idx]
                 for idx in sorted(idxs, reverse=True):
                     card = p.hand.pop(idx)
                     if idx == choice_idx:
