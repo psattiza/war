@@ -18,7 +18,7 @@
 \colorbox{csred}{\makebox[0.9\paperwidth]{}}}
 \resizebox{\paperwidth}{!}{%
 \colorbox{csgrey}{\begin{minipage}{0.5\paperwidth}
-\includegraphics[height=0.45cm]{graphics/csci101}
+\includegraphics[height=0.45cm]{graphics/war}
 \end{minipage}\begin{minipage}{0.5\paperwidth}
 \flushright\includegraphics[height=0.45cm]{graphics/csmines}
 \end{minipage}}}%
@@ -62,9 +62,6 @@
             \begin{center}
                 \large
                 \insertsubtitle
-            \end{center}
-            \begin{center}
-                \includegraphics[width=0.25\linewidth]{graphics/csci101t}
             \end{center}
         \end{frame}
     }
