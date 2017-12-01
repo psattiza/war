@@ -56,18 +56,18 @@
     <flowRoot
        xml:space="preserve"
        id="flowRoot10"
-       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#c70000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#d2492a;fill-opacity:1;stroke:none;stroke-width:0.26458332;"
        transform="translate(0,7.4185816)"><flowRegion
          id="flowRegion12"
-         style="fill:#c70000;fill-opacity:1;stroke-width:0.26458332"><rect
+         style="fill:#d2492a;fill-opacity:1;stroke-width:0.26458332;"><rect
            id="rect14"
            width="111.88095"
            height="219.98215"
            x="17.386906"
            y="34.684521"
-           style="fill:#c70000;fill-opacity:1;stroke-width:0.07000434" /></flowRegion><flowPara
+           style="fill:#d2492a;fill-opacity:1;stroke-width:0.07000434;" /></flowRegion><flowPara
          id="flowPara16"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Typo Slab';-inkscape-font-specification:'Typo Slab';fill:#c70000;fill-opacity:1;stroke-width:0.26458332">W</flowPara></flowRoot>    <flowRoot
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Typo Slab';-inkscape-font-specification:'Typo Slab';fill:#d2492a;fill-opacity:1;stroke-width:0.26458332;">W</flowPara></flowRoot>    <flowRoot
        xml:space="preserve"
        id="flowRoot18"
        style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
@@ -80,7 +80,7 @@
            y="180.55243" /></flowRegion><flowPara
          id="flowPara24"></flowPara></flowRoot>    <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#c70000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#d2492a;fill-opacity:1;stroke:none;stroke-width:0.26458332;"
        x="40.058304"
        y="51.727638"
        id="text28"><tspan
@@ -88,7 +88,7 @@
          id="tspan26"
          x="40.058304"
          y="51.727638"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Typo Slab';-inkscape-font-specification:'Typo Slab';fill:#c70000;fill-opacity:1;stroke-width:0.26458332">R</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Typo Slab';-inkscape-font-specification:'Typo Slab';fill:#d2492a;fill-opacity:1;stroke-width:0.26458332;">R</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
@@ -115,13 +115,14 @@
            style="stroke-width:0.07000434" /></flowRegion><flowPara
          id="flowPara16-5"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'DejaVu Serif';-inkscape-font-specification:'DejaVu Serif';stroke-width:0.26458332" /></flowRoot>    <g
-       style="fill:#000000"
+       style="fill:#21314d;fill-opacity:1"
        id="g3865"
        transform="matrix(0.14974522,0,0,0.14974522,27.916929,40.721865)">
       <path
          id="path3854"
          d="m 39.134,0 c 1.393,5.851 3.535,11.078 6.43,15.679 2.892,4.604 8.046,10.304 15.467,17.1 7.419,6.797 12.119,12.01 14.103,15.637 1.98,3.628 2.974,7.312 2.974,11.049 0,5.198 -1.716,9.53 -5.144,12.996 -3.429,3.465 -7.606,5.199 -12.535,5.199 -4.179,0 -7.97,-1.312 -11.371,-3.939 -3.402,-2.626 -6.415,-6.459 -9.039,-11.495 0.052,7.96 1.085,14.284 3.095,18.968 2.007,4.685 5.223,8.368 9.642,11.048 4.418,2.682 10.298,4.266 17.637,4.75 L 70.954,100 H 7.234 l 0.642,-3.009 c 9.856,0 17.502,-2.908 22.941,-8.73 5.437,-5.82 8.047,-14.499 7.834,-26.035 -2.411,5.146 -5.396,9.005 -8.959,11.576 C 26.13,76.374 22.099,77.66 17.599,77.66 12.778,77.66 8.64,75.901 5.185,72.379 1.729,68.86 0,64.638 0,59.708 0,55.755 0.886,52.18 2.654,48.984 5.064,44.544 8.972,40.077 14.384,35.58 19.795,31.085 23.787,27.377 26.357,24.452 30.267,19.957 33.12,15.951 34.915,12.43 36.71,8.91 38.117,4.767 39.134,0 Z"
-         inkscape:connector-curvature="0" />
+         inkscape:connector-curvature="0"
+         style="fill:#21314d;fill-opacity:1" />
     </g>
   </g>
 </svg>
