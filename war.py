@@ -60,7 +60,12 @@ class SimpleMindedPlayer(Player):
                     break
             return [0, 1, 2], 3 + i
         if max_of_me == max_of_all and len(upper_hand) >= 5:
-            lookahead_max = max(heapq.nlargest(2, p.hand)[1] for p in players)
+            try:
+                lookahead_max = max(
+                    heapq.nlargest(2, p.hand)[1]
+                    for p in players if len(p.hand) > 1)
+            except ValueError:
+                return [0, 1, 2], len(self.hand) - 1
             my_next_best = heapq.nlargest(2, upper_hand)[1]
             if my_next_best >= lookahead_max:
                 return [0, 1, 2], len(self.hand) - 1
