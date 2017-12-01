@@ -3,6 +3,7 @@ from random import Random
 from itertools import count
 from threading import Lock
 from concurrent.futures import ThreadPoolExecutor
+from fakefutures import FakePoolExecutor
 
 class Player:
     amount_of_me = 0
@@ -131,7 +132,10 @@ class InvalidMoveError(Exception):
 
 def play_game(players, logger=print):
     carry_pot = []
-    executor = ThreadPoolExecutor()
+    if any(isinstance(p, HumanPlayer) for p in players):
+        executor = ThreadPoolExecutor()
+    else:
+        executor = FakePoolExecutor()
     for rnd in count(0):
         players_in_round = [p for p in players if p.hand]
         logger("Start of Round {}. Remaining players: {}.".format(
