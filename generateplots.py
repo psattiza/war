@@ -5,6 +5,9 @@ from collections import defaultdict
 from functools import update_wrapper
 from math import sqrt
 
+DUMMIES = 100
+GAMESPERDUMMIE = 1000
+
 class Welford:
     def __init__(self, f):
         self.f = f
@@ -42,9 +45,9 @@ futures = []
 wins = defaultdict(lambda: defaultdict(int))
 rounds = defaultdict(statlogger)
 
-for dummies in range(1, 100 + 1):
-    for round in range(1000 + 1):
-        futures.append((e.submit( play_game, [SimpleMindedPlayer()]+ [DummiePlayer() for i in range(100)], logger=nothing), dummies))
+for d in range(1, DUMMIES + 1):
+    for _ in range(GAMESPERDUMMIE):
+        futures.append((e.submit( play_game, [SimpleMindedPlayer()]+ [DummiePlayer() for i in range(100)], logger=nothing), d))
 
 for f, d in futures:
     r, w = f.result()
@@ -52,15 +55,6 @@ for f, d in futures:
     if isinstance(w, SimpleMindedPlayer):
         rounds[d](r)
 
-for dummies in range(1, 100 + 1):
-    for round in range(1000 + 1):
-        print(dummies, wins[dummies][SimpleMinedPlayer] / sum(wins[dummies].values()), file=wf)
-        print(dummies, rounds[dummies].mean, rounds[dummies].stdev, file=rf)
-
-
-
-print("Done with", dummies)
-
-
-
-
+for d in range(1, DUMMIES + 1):
+    print(d, wins[d][SimpleMindedPlayer] / sum(wins[d].values()), file=wf)
+    print(d, rounds[d].mean, rounds[d].stdev, file=rf)
