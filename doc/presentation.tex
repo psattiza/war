@@ -9,6 +9,7 @@
 \let\geq=\geqslant
 
 \usepackage{pgfplots}
+\pgfplotsset{compat=1.15}
 
 \begin{document}
 
@@ -72,7 +73,7 @@
                 \item Compute $S = \{H_{ic} \,|\, \forall j,d\, [H_{ic} >
                     H_{jd}]\}$.
                 \item If $S \ne \emptyset$, play $\min(S)$.
-                \item Otherwise if, $|H_i| \geq 4$, $\exists j,c \,[H_{ic} =
+                \item Otherwise if, $|H_i| \geq 5$, $\exists j,c \,[H_{ic} =
                     \max\left(H_{j}\right) \land \max_2\left(H_{i}\right) \geq
                     \max_2\left(H_{j}\right)]$, then play the corresponding $H_{ic}$.
                 \item Otherwise, play $\min\left(H_{i}\right)$.
@@ -80,9 +81,60 @@
         \item To play a tie, follow strategy similar to above, but remove 3
               smallest cards from hand first to be discarded.
     \end{itemize}
-    \bigskip
+
+\end{frame}
+
+\begin{frame}{\textbf{Example:} SMP Move Computation ($S \ne \emptyset$)}
+    Player 1 is a SMP. Players 2, 3, 4 are opponents of unknown strategy.
+
     \pause
 
+    \begin{align*}
+        H_1 &= \{8, 9, 10, 10, \mathrm{Q}\} \\
+        H_2 &= \{4, 5, 7, 7, 9\} \\
+        H_3 &= \{2, 3\} \\
+        H_4 &= \{5, 9\}
+    \end{align*}
+
+    \pause
+
+    \begin{enumerate}[<+->]
+        \item Compute $S = \{H_{ic} \,|\, \forall j,d\, [H_{ic} >
+            H_{jd}]\} = \{10, 10, \mathrm{Q}\}$.
+        \item $S \ne \emptyset$, so we play $\min(S) = 10$.
+    \end{enumerate}
+
+\end{frame}
+
+\begin{frame}{\textbf{Example:} SMP Move Computation ($S = \emptyset$)}
+    Player 1 is a SMP. Players 2, 3, 4 are opponents of unknown strategy.
+
+    \begin{align*}
+        H_1 &= \{8, 9, 10, 10, \mathrm{Q}\} \\
+        H_2 &= \{4, 5, 7, 7, 9, \mathrm{Q}\} \\
+        H_3 &= \{2, 3\} \\
+        H_4 &= \{5, 9\}
+    \end{align*}
+
+    \pause
+
+    \begin{enumerate}[<+->]
+        \item Compute $S = \{H_{ic} \,|\, \forall j,d\, [H_{ic} >
+            H_{jd}]\} = \emptyset$.
+        \item $S = \emptyset$, so we cannot play from $S$.
+        \item See if we can play high:
+            \begin{enumerate}[<+->]
+                \item $|H_i| \geq 5$? Yes.
+                \item $\exists j,c \,[H_{ic} =
+            \max\left(H_{j}\right) \land \max_2\left(H_{i}\right) \geq
+                    \max_2\left(H_{j}\right)]$? Yes, $j = 2$, $H_{jc} =
+                    \mathrm{Q}$.
+                \item Play $\mathrm{Q}$.
+            \end{enumerate}
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}{SMP Preformance}
     \textbf{How well does a SMP do against $N$ other SMPs?} A SMP will always
     die against a fellow SMP, and the game will result with no winners. So an
     SMP stands a 0\% chance here.
@@ -92,14 +144,12 @@
 
     \textbf{How well does a SMP do against $N$ DPs?} Too hard to figure out
     mathematically, so we wrote a computer simulation to answer this.
-
 \end{frame}
-
-% TODO SMP calculation example
 
 \begin{frame}{Computer Simulation}
 
     \begin{itemize}
+        \item \url{https://github.com/psattiza/war}
         \item 100,000 simulated games
         \item A single SMP battles $N$ DPs, for all $N \in \{1, \ldots, 100\}$.
     \end{itemize}
