@@ -30,11 +30,7 @@
 \RequirePackage{ifxetex}
 \ifxetex\RequirePackage{fontspec}\fi
 
-\RequirePackage{minted}
 \RequirePackage{xcolor}
-\setminted{autogobble,python3,mathescape}
-\usemintedstyle{emacs}
-
 \RequirePackage{tcolorbox}
 
 \RequirePackage[overlay,absolute]{textpos}
@@ -60,7 +56,7 @@
                 \inserttitle
             \end{center}
             \begin{center}
-                \large
+                \Huge
                 \insertsubtitle
             \end{center}
         \end{frame}

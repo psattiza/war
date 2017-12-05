@@ -7,7 +7,7 @@
 *.out
 *.toc
 *.fmt
-*.pdf
+/doc/*.pdf
 
 ## Intermediate documents:
 *.dvi
@@ -151,5 +151,5 @@ pythontex-files-*/
 __pycache__
 
 doc/game.png
-rounds.dat
-wins.dat
+/rounds.dat
+/wins.dat

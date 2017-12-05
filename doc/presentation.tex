@@ -1,0 +1,180 @@
+\documentclass{slides}
+
+\title{\includegraphics[width=0.5\paperwidth]{graphics/war.pdf}}
+\subtitle{WAR with Auction Rounds}
+\author{Jack Rosenthal, Paul Sattizahn}
+\institute{CSCI-410: Game Theory \& Networks}
+
+\let\leq=\leqslant
+\let\geq=\geqslant
+
+\usepackage{pgfplots}
+
+\begin{document}
+
+\begin{frame}{Assumptions}
+    Since:
+    \begin{enumerate}
+        \item The starting state of each player is known to all other players
+        \item Every player knows what all other players played
+    \end{enumerate}
+
+    \bigskip
+
+    We may assume:
+
+    \begin{block}{Perfect Information Principle}
+        Since every player is capable of ``counting cards'', every player is
+        theoretically capable of knowing the cards in every other player $i$'s
+        hand ($H_i$) and wins pile ($W_i$).
+    \end{block}
+
+\end{frame}
+
+\begin{frame}{WAR as a Repeated Static Game}
+    WAR can be represented as a repeated static game; that is, the outcome of a
+    player's move depends on the other players' moves, but state is maintained
+    between moves to formulate the outcome of game.
+\end{frame}
+
+\begin{frame}{Problem Statement}
+    You already know how WAR works.
+
+    \pause
+    \bigskip
+
+    Given a game of WAR with $N$ players, devise a \textbf{strategy} to ``do
+    well'' at WAR.
+\end{frame}
+
+\begin{frame}{Dead Simple Strategy: DummiePlayer (DP)}
+
+    \textbf{DummiePlayer$i$ (DP)}:
+    \begin{itemize}
+        \item To play a normal move, select randomly from $H_i$
+        \item To play a tie, choose 4 cards randomly from $H_i$ and discard the
+            first 3, play the last
+    \end{itemize}
+
+    \pause
+    \bigskip
+
+    \textbf{How well does DP do?} When playing against $N$ other DP's, a
+    DP will have a $\frac1N$ chance of winning.
+
+\end{frame}
+
+\begin{frame}{An Intelligent Player: SimpleMindedPlayer (SMP)}
+    \textbf{SimpleMindedPlayer$i$ (SMP)}:
+    \begin{itemize}
+        \item To determine a normal play:
+            \begin{enumerate}
+                \item Compute $S = \{H_{ic} \,|\, \forall j,d\, [H_{ic} >
+                    H_{jd}]\}$.
+                \item If $S \ne \emptyset$, play $\min(S)$.
+                \item Otherwise if, $|H_i| \geq 4$, $\exists j,c \,[H_{ic} =
+                    \max\left(H_{j}\right) \land \max_2\left(H_{i}\right) \geq
+                    \max_2\left(H_{j}\right)]$, then play the corresponding $H_{ic}$.
+                \item Otherwise, play $\min\left(H_{i}\right)$.
+            \end{enumerate}
+        \item To play a tie, follow strategy similar to above, but remove 3
+              smallest cards from hand first to be discarded.
+    \end{itemize}
+    \bigskip
+    \pause
+
+    \textbf{How well does a SMP do against $N$ other SMPs?} A SMP will always
+    die against a fellow SMP, and the game will result with no winners. So an
+    SMP stands a 0\% chance here.
+
+    \bigskip
+    \pause
+
+    \textbf{How well does a SMP do against $N$ DPs?} Too hard to figure out
+    mathematically, so we wrote a computer simulation to answer this.
+
+\end{frame}
+
+% TODO SMP calculation example
+
+\begin{frame}{Computer Simulation}
+
+    \begin{itemize}
+        \item 100,000 simulated games
+        \item A single SMP battles $N$ DPs, for all $N \in \{1, \ldots, 100\}$.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Computer Simulation}
+
+    \begin{center}
+    \begin{tikzpicture}
+    \begin{axis}[
+            title=SMP vs. $N$ DPs: Win Ratio,
+            xlabel={Number of DPs ($N$)},
+            ylabel={SMP Win Ratio},
+    ]
+    \addplot
+    [blue] table {wins.dat};
+    \end{axis}
+    \end{tikzpicture}
+    \end{center}
+\end{frame}
+\begin{frame}{Computer Simulation}
+
+    \begin{center}
+    \begin{tikzpicture}
+    \begin{axis}[
+            title=SMP vs. $N$ DPs: Mean Rounds Played,
+            xlabel={Number of DPs ($N$)},
+            ylabel={Mean Rounds Played},
+    ]
+    \addplot
+    [red] table {mrounds.dat};
+    \end{axis}
+    \end{tikzpicture}
+    \end{center}
+\end{frame}
+\begin{frame}{Computer Simulation}
+
+    \begin{center}
+    \begin{tikzpicture}
+    \begin{axis}[
+            title=SMP vs. $N$ DPs: Variance of Rounds Played,
+            xlabel={Number of DPs ($N$)},
+            ylabel={$\sigma$ (Rounds)},
+    ]
+    \addplot
+    [green] table {vrounds.dat};
+    \end{axis}
+    \end{tikzpicture}
+    \end{center}
+\end{frame}
+
+\begin{frame}{Extensions}
+    \begin{itemize}[<+->]
+        \item SMP does not take into account $W_i$ for either themselves, or
+            other players. Design a CMP (ComplexMindedPlayer) which adds in
+            factors from $W_i$.
+        \item When an SMP determines it cannot win, it chooses it's lowest
+            card, which may have a high probability of causing a tie against
+            DPs. Design a player good for defeating large quantities of DPs
+            that takes this into account.
+        \item Throw the game at a ML algorithm and see what happens?
+        \item More simulation runs!
+    \end{itemize}
+\end{frame}
+
+{
+    \setbeamercolor{background canvas}{bg=csblue}
+\begin{frame}
+
+    \begin{center}
+        \Huge
+        \color{white}{Questions?}
+    \end{center}
+
+\end{frame}
+}
+
+\end{document}
