@@ -1,0 +1,61 @@
+\documentclass[twocolumn,11pt]{article}
+
+\usepackage{fontspec}
+\usepackage{graphicx}
+\usepackage{hyperref}
+
+\title{\textbf{WAR: WAR with Auction Rounds} \\
+{\large Report for \emph{Game Theory \& Networks} with \emph{Dr.~Dejun Yang}}
+}
+\author{
+    Jack Rosenthal \\
+    \texttt{jrosenth@mines.edu}
+    \and Paul Sattizahn \\
+    \texttt{psattiza@mines.edu}}
+\date{2017-12-15}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+
+\emph{War} is a card game played with two players and a single deck of cards.
+The deck of cards is shuffled, and each player is dealt half of the deck. The
+players repeatedly flip the top card of their deck, the player flipping the
+higher valued card wins both cards and puts the cards in their \emph{wins
+pile}. If the two players play the same card, they ``go to war''. In a war (the
+resolution of a tie), both players discard the top three cards from their deck
+to the pot, then play a fourth. The fourth card decides who wins the war. If
+the fourth card is the same, the players go to war again until the war is
+resolved. Once a player runs out of cards in their deck, they flip their wins
+pile and continue to play. If they have no wins pile, the other player wins.
+
+Studying War would be very boring from a game theoretical approach, as the game
+involves no element of strategy. Instead, we propose a modified game: WAR -- a
+recursive acronym standing for \textbf{WAR with Auction Rounds}. To distinguish
+these two games, we will refer to the original game of War as \emph{Regular
+War}, and our modified version as \emph{WAR} (as printed in all capital
+letters).
+
+WAR is a game played with $N$ players, each player starts with one suite of
+cards (13 cards, labelled $2, 3, \ldots, 10, \mathrm{J}, \mathrm{Q},
+\mathrm{K}, \mathrm{A}$). The players then repeatedly \emph{choose} a card from
+their hand to play, the cards are then flipped simultaneously and the player
+who plays the highest card takes all the cards for their wins pile. Similar to
+Regular War, when there is a tie for the highest card, all the players who
+played the highest card go to war. Unlike Regular War, during a war, each of
+the players involved get to \emph{choose} which three cards to discard and
+which card to battle with. This process is repeated until the war is resolved.
+Finally, just like Regular War, when a player is out of cards in their hand,
+they pick up their wins pile if they have one, otherwise, they are out of the
+game.
+
+To assist in your understanding of the game, the authors have produced a video
+demonstration of the game. This video is available online at
+\url{https://www.youtube.com/watch?v=KzWVCbNsjwc}.
+
+In this paper, we will define a model for the game, and discuss various
+strategies (and their relation in terms of effectiveness to the other
+strategies) we discovered.
+
+\end{document}
