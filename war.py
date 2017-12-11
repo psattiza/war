@@ -1,9 +1,7 @@
 import heapq
 from random import Random
 from itertools import count
-from threading import Lock
-from concurrent.futures import ThreadPoolExecutor
-from fakefutures import FakePoolExecutor
+from copy import deepcopy
 
 class Player:
     amount_of_me = 0
@@ -72,59 +70,102 @@ class SimpleMindedPlayer(Player):
                 return [0, 1, 2], len(self.hand) - 1
         return [0, 1, 2], 3
 
+class GeneralPurposeAdversary(Player):
+    def chooseone(self, players):
+        self.hand.sort()
+        max_of_all = 0
+        max_players = []
+        for p in players:
+            if not p.hand:
+                continue
+            card = p.hand[p.chooseone([pp for pp in players if pp != p] + [self])]
+            if card > max_of_all:
+                max_of_all = card
+                max_players = [p]
+            elif card == max_of_all:
+                max_players.append(p)
+        max_of_me = self.hand[-1]
+        if max_of_me > max_of_all:
+            for i, card in enumerate(self.hand):
+                if card > max_of_all:
+                    return i
+        if max_of_me == max_of_all and len(self.hand) >= 5:
+            max_players = deepcopy(max_players)
+            me = deepcopy(self)
+            for p in max_players:
+                p.hand.remove(max_of_all)
+                if not p.hand:
+                    max_players.remove(p)
+            me.hand.remove(max_of_all)
+            my_discards, my_choice = me.choosetie(max_players)
+            max_choice = 0
+            for p in max_players:
+                if len(p.hand) < 4:
+                    continue
+                discard_idxs, choice_idx = p.choosetie([pp for pp in max_players if pp != p] + [me])
+                if p.hand[choice_idx] > me.hand[my_choice]:
+                    return 0
+            return len(self.hand) - 1
+        return 0
+
+    def choosetie(self, players):
+        if not any(p.hand for p in players):
+            # we win this one no matter what happens
+            return [0, 1, 2], 3
+        me = deepcopy(self)
+        me.hand = me.hand[3:]
+        return [0, 1, 2], me.chooseone(players) + 3
+
 class HumanPlayer(Player):
-    io_lock = Lock()
 
     def chooseone(self, players):
         self.hand.sort()
-        with self.io_lock:
-            print("==> {} <==".format(self.name))
-            while True:
+        print("==> {} <==".format(self.name))
+        while True:
+            print()
+            if self.wins:
+                print("Here is your wins pile (you cannot play now):")
+                print(" " * 3, ', '.join(map(str, self.wins)))
                 print()
-                if self.wins:
-                    print("Here is your wins pile (you cannot play now):")
-                    print(" " * 3, ', '.join(map(str, self.wins)))
-                    print()
-                print("Here is your hand:")
-                print(" " * 3, ', '.join(map(str, self.hand)))
-                print()
-                try:
-                    choice = int(input("Which card do you choose? "))
-                    idx = self.hand.index(choice)
-                    return idx
-                except ValueError:
-                    print("That's not a valid choice, dummie!")
+            print("Here is your hand:")
+            print(" " * 3, ', '.join(map(str, self.hand)))
+            print()
+            try:
+                choice = int(input("Which card do you choose? "))
+                idx = self.hand.index(choice)
+                return idx
+            except ValueError:
+                print("That's not a valid choice, dummie!")
 
     def choosetie(self, players):
-        with self.io_lock:
-            print("==> {} <==".format(self.name))
-            h = self.hand[:]
-            idxs = []
-            print()
-            print("There was a tie between you and {} other player{}.".format(
-                    len(players), "s" if players != 1 else ""
-                )
+        print("==> {} <==".format(self.name))
+        h = self.hand[:]
+        idxs = []
+        print()
+        print("There was a tie between you and {} other player{}.".format(
+                len(players), "s" if players != 1 else ""
             )
-            for prompt in ("Choose the first card to discard: ",
-                           "Choose the second card to discard: ",
-                           "Choose the third card to discard: ",
-                           "Choose your play: "):
-                print()
-                print("Here is your hand:")
-                print(" " * 3, ', '.join(
-                    ("\x1B[34m{}\x1B[0m" if th is not None else "\x1B[33m{}\x1B[0m").format(rh)
-                    for th, rh in zip(h, self.hand))
-                )
-                print()
-                while True:
-                    try:
-                        choice = int(input(prompt))
-                        idx = h.index(choice)
-                        break
-                    except ValueError:
-                        print("That's not a valid choice, dummie!")
-                h[idx] = None
-                idxs.append(idx)
+        )
+        for prompt in ("Choose the first card to discard: ",
+                       "Choose the second card to discard: ",
+                       "Choose the third card to discard: ",
+                       "Choose your play: "):
+            print()
+            print("Here is your hand:")
+            print(" " * 3, ', '.join(
+                ("\x1B[34m{}\x1B[0m" if th is not None else "\x1B[33m{}\x1B[0m").format(rh)
+                for th, rh in zip(h, self.hand))
+            )
+            print()
+            while True:
+                try:
+                    choice = int(input(prompt))
+                    idx = h.index(choice)
+                    break
+                except ValueError:
+                    print("That's not a valid choice, dummie!")
+            h[idx] = None
+            idxs.append(idx)
         return idxs[:-1], idxs[-1]
 
 class InvalidMoveError(Exception):
@@ -132,10 +173,6 @@ class InvalidMoveError(Exception):
 
 def play_game(players, logger=print):
     carry_pot = []
-    if any(isinstance(p, HumanPlayer) for p in players):
-        executor = ThreadPoolExecutor()
-    else:
-        executor = FakePoolExecutor()
     for rnd in count(0):
         players_in_round = [p for p in players if p.hand]
         logger("Start of Round {}. Remaining players: {}.".format(
@@ -146,13 +183,9 @@ def play_game(players, logger=print):
             break
 
         # Ask each player for their card of choice
-        choice_f = []
-        for p in players_in_round:
-            choice_f.append((p, executor.submit(p.chooseone, players_in_round)))
-
         choices = []
-        for p, idx_future in choice_f:
-            idx = idx_future.result()
+        for p in players_in_round:
+            idx = p.chooseone([op for op in players_in_round if op != p])
             if idx not in range(len(p.hand)):
                 raise InvalidMoveError
             choices.append((p, idx))
@@ -176,16 +209,12 @@ def play_game(players, logger=print):
         while len(winners) > 1:
             logger("It's a tie!")
             choices = []
-            choice_f = []
 
             for p in winners:
                 if len(p.hand) < 4:
                     choices.append((p, list(range(len(p.hand))), None))
                     continue
-                choice_f.append((p, executor.submit(p.choosetie, [w for w in winners if w != p])))
-
-            for p, future in choice_f:
-                discard_idxs, choice_idx = future.result()
+                discard_idxs, choice_idx = p.choosetie([w for w in winners if w != p])
                 if (any(idx not in range(len(p.hand))
                         for idx in discard_idxs + [choice_idx])
                     or len(set(discard_idxs + [choice_idx])) != 4):
@@ -237,7 +266,6 @@ def play_game(players, logger=print):
                     logger("{} gathers their wins pile with {} cards.".format(p.name, len(p.wins)))
                     p.hand = p.wins
                     p.wins = []
-    executor.shutdown()
     if len(players_in_round) == 1:
         p = players_in_round[0]
         logger("Congrats to {}, the winner of the game!".format(p.name))
