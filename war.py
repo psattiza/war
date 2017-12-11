@@ -171,13 +171,21 @@ class HumanPlayer(Player):
 class InvalidMoveError(Exception):
     pass
 
-def play_game(players, logger=print):
+def play_game(players, logger=print, kill_at_uniq=False):
     carry_pot = []
     for rnd in count(0):
         players_in_round = [p for p in players if p.hand]
         logger("Start of Round {}. Remaining players: {}.".format(
             rnd, ', '.join(p.name for p in players_in_round)
         ))
+        if kill_at_uniq:
+            for p in players_in_round:
+                if type(p) != type(players_in_round[-1]):
+                    break
+            else:
+                if not players_in_round:
+                    return rnd, None
+                return rnd, players_in_round[0]
         if len(players_in_round) < 2:
             logger("Less than two players remain. End of game.")
             break

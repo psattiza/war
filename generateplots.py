@@ -6,7 +6,7 @@ from functools import update_wrapper
 from math import sqrt
 
 DUMMIES = 100
-GAMESPERDUMMIE = 1000
+THIRTYGAMESPERDUMMIE = 301
 
 class Welford:
     def __init__(self, f):
@@ -37,6 +37,12 @@ def statlogger():
 def nothing(a):
     return a
 
+def bulk_executor(calls):
+    return [f(*args, **kwargs) for f, args, kwargs in calls]
+
+def bulk_dummie_executor(d):
+    return bulk_executor([(play_game, [[SimpleMindedPlayer()]+ [DummiePlayer() for i in range(d)]], dict(logger=nothing, kill_at_uniq=True)) for _ in range(30)])
+
 wf = open("wins.dat", "w")
 rf = open("rounds.dat", "w")
 e = ProcessPoolExecutor()
@@ -46,14 +52,18 @@ wins = defaultdict(lambda: defaultdict(int))
 rounds = defaultdict(statlogger)
 
 for d in range(1, DUMMIES + 1):
-    for _ in range(GAMESPERDUMMIE):
-        futures.append((e.submit( play_game, [SimpleMindedPlayer()]+ [DummiePlayer() for i in range(100)], logger=nothing), d))
+    for _ in range(THIRTYGAMESPERDUMMIE):
+        futures.append((
+                d,
+                e.submit(bulk_dummie_executor, d)
+        ))
 
-for f, d in futures:
-    r, w = f.result()
-    wins[d][type(w)] += 1
-    if isinstance(w, SimpleMindedPlayer):
-        rounds[d](r)
+for d, f in futures:
+    results = f.result()
+    for r, w in results:
+        wins[d][type(w)] += 1
+        if isinstance(w, SimpleMindedPlayer):
+            rounds[d](r)
 
 for d in range(1, DUMMIES + 1):
     print(d, wins[d][SimpleMindedPlayer] / sum(wins[d].values()), file=wf)
