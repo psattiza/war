@@ -10,7 +10,12 @@
 \algrenewcommand\algorithmiccomment[1]{$\triangleright$ #1}
 \let\leq=\leqslant
 \let\geq=\geqslant
-
+\newcommand\MinP{\textsc{MinPlayer}}
+\newcommand\MaxP{\textsc{MaxPlayer}}
+\newcommand\DP{\textsc{DummiePlayer}}
+\newcommand\SMPo{\textsc{SimpleMindedPlayer1}}
+\newcommand\SMPt{\textsc{SimpleMindedPlayer2}}
+\newcommand\GPA{\textsc{GeneralPurposeAdversary}}
 \pagenumbering{arabic}
 
 \title{%
@@ -145,5 +150,54 @@ Figure~\ref{alg:war} formally defines a game of war using pseudocode.
     \caption{A game of WAR, represented formally in pseudocode.}
     \label{alg:war}
 \end{figure}
+
+\section{Strategies}
+To further analyze the game, we define strategies. Each strategy is assigned
+to a type of player, such that all players of a given type will play WAR with
+the corresponding strategy.
+
+\subsection{\MinP}
+The \MinP{} strategy will always pick its minimum card when
+given a choice. In other words, for a \MinP{} $n$, $\textsc{SelectCard}(n,\,H_n) = \min(H_n)$.
+In the case of a war (tie), the \MinP{} will discard
+its lowest three cards, and then it selects its next lowest card to play.
+In other words, for a \MinP{} $n$, $\textsc{SelectTie}(n,\,H_n) = (\min_1(H_n),\,\min_2(H_n),\,\min_3(H_n),\,\min_4(H_n))$.
+
+
+\subsection{\MaxP}
+The \MaxP{} strategy will always pick its maximum card when
+given a choice. In other words, for a \MinP{} $n$, $\textsc{SelectCard}(n,\,H_n) = \max(H_n)$.
+In the case of a war (tie), the \MaxP{} strategy will discard
+similarly to a \MinP. The \MaxP{} discards its lowest three cards,
+but it selects its highest card to play.
+In other words, for a \MaxP{} $n$, $\textsc{SelectTie}(n,\,H_n) = (\min_1(H_n),\,\min_2(H_n),\,\min_3(H_n),\,\max(H_n))$.
+
+\subsection{\DP}
+The \DP{} implements a very simple strategy. Whenever the \DP{}
+has the option between a set of choices, it will choose one of the choices
+randomly, where each choice has an equal chance being picked. In other words,
+for a \DP{} $n$, $\textsc{SelectCard}(n, H_n) = \textsc{RandomChoice}(H_n)$.
+The cards to discard in the case of a tie are also picked randomly.
+In other words, for a \DP{} $n$, $\textsc{SelectTie}(n,\,H_n) = \textsc{RandomSample}(4,\,H_n)$.
+
+
+\subsection{\SMPo}
+The \SMPo{} is the first strategy to take its opponents strategy into consideration when making a choice.
+%TODO: Add stuff
+
+\subsection{\SMPt}
+The \SMPt{} is almost identical to the \SMPo, except it is {more,less} risky.
+%TODO: Add stuff
+
+\subsection{\GPA}
+The \GPA{} is a strategy that takes advantage of other deterministic players'
+strategies. When playing against a deterministic player, a \GPA{} player
+will...
+%TODO: Add stuff
+
+\section{Simulation}
+
+\section{Conclusion}
+
 
 \end{document}
