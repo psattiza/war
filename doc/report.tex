@@ -169,8 +169,8 @@ Figure~\ref{alg:war} formally defines a game of war using pseudocode.
                         \State $d_1, d_2, d_3, \mathbf{c}_n \gets$ \Call{SelectTie}{$n$, $H_n$}
                         \State $z \gets z \cup \{d_1, d_2, d_3, \mathbf{c}_n\}$
                     \EndFor
-                    \ForAll{$n$ in $\mathbf{w}$}
-                        \State Remove $\mathbf{w}_n$ from $H_n$ and reveal
+                    \ForAll{$n$ in $\mathbf{c}$}
+                        \State Remove $\mathbf{c}_n$ from $H_n$ and reveal
                     \EndFor
                     \State $\mathbf{w} \gets [\mathbf{c}_n \,|\, \mathbf{c}_n \in \max(\mathbf{c})]$
                 \EndWhile
