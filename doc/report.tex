@@ -137,8 +137,48 @@ Figure~\ref{alg:war} formally defines a game of war using pseudocode.
             \State $H_n \gets \{2, \ldots, 13\}$
             \State $W_n \gets \emptyset$
         \EndFor
+        \State $z \gets \emptyset$
+        \State \Comment{While there are still remaining players\dots}
         \While{$|\left\{H_n \,:\, n \in \left\{1, \ldots, N\right\} \,|\, |H_n| \geq 1\right\}| \geq 2$}
-        \State\Comment{Do the thing Julie}
+            \State $\mathbf{p} \gets \left[n \,:\, n \in \left\{1, \ldots, N\right\} \,|\, |H_n| \geq 1\right]$
+            \State \Comment{Ask each player to select a card}
+            \State $\mathbf{c} \gets []$
+            \ForAll{$n$ in $\mathbf{p}$}
+                \State $\mathbf{c}_n \gets$ \Call{SelectCard}{$n$, $H_n$}
+            \EndFor
+            \ForAll{$n$ in $\mathbf{p}$}
+                \State Remove $\mathbf{c}_n$ from $H_n$ and reveal
+            \EndFor
+            \State $\mathbf{w} \gets [\mathbf{c}_n \,|\, \mathbf{c}_n \in \max(\mathbf{c})]$
+            \If{$|\mathbf{w}| \ne 1$}
+                \State \Comment{It's a tie. Go to war!}
+                \While{$|\mathbf{w}| \leq 2$}
+                    \State $\mathbf{c} \gets []$
+                    \ForAll{$n$ in $\mathbf{w}$}
+                        \If{$|H_n| \leq 3$}
+                            \State $z \gets z \cup H_n$
+                            \State $H_n \gets \emptyset$
+                            \State Remove $n$ from $\mathbf{w}$ and continue
+                        \EndIf
+                        \State $d_1, d_2, d_3, \mathbf{c}_n \gets$ \Call{SelectTie}{$n$, $H_n$}
+                        \State $z \gets z \cup \{d_1, d_2, d_3\}$
+                    \EndFor
+                    \ForAll{$n$ in $\mathbf{w}$}
+                        \State Remove $\mathbf{w}_n$ from $H_n$ and reveal
+                    \EndFor
+                    \State $\mathbf{w} \gets [\mathbf{c}_n \,|\, \mathbf{c}_n \in \max(\mathbf{c})]$
+                \EndWhile
+            \EndIf
+            \If{$|\mathbf{w}| = 1$}
+                \State $W_{\mathbf{w}_1} \gets W_{\mathbf{w}_1} \cup \mathbf{c} \cup z$
+                \State $z \gets \emptyset$
+            \EndIf
+            \ForAll{$n$ in $\mathbf{p}$}
+                \If{$H_n = \emptyset$}
+                    \State $H_n \gets W_n$
+                    \State $W_n \gets \emptyset$
+                \EndIf
+            \EndFor
         \EndWhile
         \EndProcedure
     \end{algorithmic}
