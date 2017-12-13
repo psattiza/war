@@ -43,7 +43,15 @@ class SimpleMindedPlayer(Player):
                 if card > max_of_all:
                     return i
         if max_of_me == max_of_all and len(self.hand) >= 5:
-            return len(self.hand) - 1
+            try:
+                lookahead_max = max(
+                    heapq.nlargest(2, p.hand)[1]
+                    for p in players if len(p.hand) > 1)
+            except ValueError:
+                return len(self.hand) - 1
+            my_next_best = heapq.nlargest(2, self.hand)[1]
+            if my_next_best >= lookahead_max:
+                return len(self.hand) - 1
         return 0
 
     def choosetie(self, players):

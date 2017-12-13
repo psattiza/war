@@ -1,10 +1,28 @@
-\documentclass[twocolumn,11pt]{article}
+\documentclass[conference]{IEEEtran}
 
 \usepackage{fontspec}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage{algpseudocode}
+\usepackage{amsmath}
+\usepackage{amssymb}
 
-\title{\textbf{WAR: WAR with Auction Rounds} \\
+\algrenewcommand\algorithmiccomment[1]{$\triangleright$ #1}
+\let\leq=\leqslant
+\let\geq=\geqslant
+\newcommand\MinP{\textsc{MinPlayer}}
+\newcommand\MaxP{\textsc{MaxPlayer}}
+\newcommand\DP{\textsc{DummiePlayer}}
+\newcommand\SMPo{\textsc{SimpleMindedPlayer1}}
+\newcommand\SMPt{\textsc{SimpleMindedPlayer2}}
+\newcommand\GPA{\textsc{GeneralPurposeAdversary}}
+\pagenumbering{arabic}
+
+\title{%
+\begin{center}
+    \includegraphics[width=0.4\textwidth]{graphics/war.pdf}
+\end{center}
+\textbf{WAR: WAR with Auction Rounds} \\
 {\large Report for \emph{Game Theory \& Networks} with \emph{Dr.~Dejun Yang}}
 }
 \author{
@@ -15,7 +33,18 @@
 \date{2017-12-15}
 
 \begin{document}
+
 \maketitle
+\thispagestyle{plain}
+\pagestyle{plain}
+
+\begin{abstract}
+    War is a probabilistic card game commonly played in North America. In this
+    paper, we investigate our own strategic variant of War called WAR (which
+    stands for WAR with Auction Rounds) from a game theoretic approach, design
+    strategies for playing the game, and analyze the effectiveness of the
+    strategies using a computer simulation.
+\end{abstract}
 
 \section{Introduction}
 
@@ -38,8 +67,9 @@ War}, and our modified version as \emph{WAR} (as printed in all capital
 letters).
 
 WAR is a game played with $N$ players, each player starts with one suite of
-cards (13 cards, labelled $2, 3, \ldots, 10, \mathrm{J}, \mathrm{Q},
-\mathrm{K}, \mathrm{A}$). The players then repeatedly \emph{choose} a card from
+cards (12 cards, labelled $2, 3, \ldots, 10, \mathrm{J}, \mathrm{Q},
+\mathrm{K}$). The cards J, Q, and K have the values 11, 12, and 13,
+respectively. The players then repeatedly \emph{choose} a card from
 their hand to play, the cards are then flipped simultaneously and the player
 who plays the highest card takes all the cards for their wins pile. Similar to
 Regular War, when there is a tie for the highest card, all the players who
@@ -50,12 +80,165 @@ Finally, just like Regular War, when a player is out of cards in their hand,
 they pick up their wins pile if they have one, otherwise, they are out of the
 game.
 
+Normally, WAR is won by the last remaining player in the game. However, there
+does exist the possibility that a game of WAR cannot be won by any of the
+players. This will occur when all of the remaining players get in a tie, but
+all players run out of cards before the tie is resolved.
+
 To assist in your understanding of the game, the authors have produced a video
-demonstration of the game. This video is available online at
-\url{https://www.youtube.com/watch?v=KzWVCbNsjwc}.
+demonstration of the game. This video is available online at:
+\begin{center}
+\url{https://www.youtube.com/watch?v=KzWVCbNsjwc}
+\end{center}
 
 In this paper, we will define a model for the game, and discuss various
 strategies (and their relation in terms of effectiveness to the other
 strategies) we discovered.
+
+\section{System Model}
+
+WAR is a repeated static game; that is, all players move simultaneously, the
+utility of one player depends on the decision of another player, and the state
+of the game is not independent from round to round.
+
+At the beginning of a game of WAR, every player begins with a known set of
+cards, and after all of the events that occur in the game, the cards that are
+exchanged are known to every other player. In theory, if every player were able
+to count the cards that went by, they could determine what any other player has
+in their hand and in their wins pile. We say that WAR is a game of \emph{perfect
+information}, all players have complete knowledge of the state of the game
+(with the exception of the information of the card another player is about to
+play, which means our game differs slightly from the standard definition of
+perfect information).
+
+We will use the following mathematical notation in our strategies to describe
+the system:
+\begin{enumerate}
+    \item $N$: The number of players in the game, where each player is
+        identified with a number $n$, where $n \in \{1, \ldots{}, N\}$.
+    \item $H_n$: The set of cards in player $n$'s hand.
+    \item $W_n$: The set of cards in player $n$'s wins pile.
+\end{enumerate}
+
+In addition, we will define a utility function $u_n(H_n, W_n)$ which can not only
+be used to evaluate the utility of a player at the beginning of a game, but
+also evaluate how well a player is doing during the middle of a game.
+
+\begin{displaymath}
+    u_n(H_n, W_n) = \sum_{i=1}^{|H_n|}{H_{ni}} + \sum_{j=1}^{|W_n|}{W_{nj}}
+\end{displaymath}
+
+It follows that $u_n(H_n, W_n)$ for the winning player at the end of the game
+is $N\sum_{i=2}^{13}{i} = 90N$ and the utility for all other players is $0$. In
+the case when nobody wins, the utility for all players is $0$.
+
+Figure~\ref{alg:war} formally defines a game of war using pseudocode.
+
+\begin{figure}
+    \begin{algorithmic}
+        \Procedure{WAR}{$N$}
+        \State \Comment{Initialize the hand and wins pile of all players}
+        \For{$n$ in $\{1, \ldots, N\}$}
+            \State $H_n \gets \{2, \ldots, 13\}$
+            \State $W_n \gets \emptyset$
+        \EndFor
+        \State $z \gets \emptyset$
+        \State \Comment{While there are still remaining players\dots}
+        \While{$|\left\{H_n \,:\, n \in \left\{1, \ldots, N\right\} \,|\, |H_n| \geq 1\right\}| \geq 2$}
+            \State $\mathbf{p} \gets \left[n \,:\, n \in \left\{1, \ldots, N\right\} \,|\, |H_n| \geq 1\right]$
+            \State \Comment{Ask each player to select a card}
+            \State $\mathbf{c} \gets []$
+            \ForAll{$n$ in $\mathbf{p}$}
+                \State $\mathbf{c}_n \gets$ \Call{SelectCard}{$n$, $H_n$}
+            \EndFor
+            \ForAll{$n$ in $\mathbf{p}$}
+                \State Remove $\mathbf{c}_n$ from $H_n$ and reveal
+            \EndFor
+            \State $\mathbf{w} \gets [\mathbf{c}_n \,|\, \mathbf{c}_n \in \max(\mathbf{c})]$
+            \State $z \gets z \cup \mathbf{c}$
+            \If{$|\mathbf{w}| \ne 1$}
+                \State \Comment{It's a tie. Go to war!}
+                \While{$|\mathbf{w}| \leq 2$}
+                    \State $\mathbf{c} \gets []$
+                    \ForAll{$n$ in $\mathbf{w}$}
+                        \If{$|H_n| \leq 3$}
+                            \State $z \gets z \cup H_n$
+                            \State $H_n \gets \emptyset$
+                            \State Remove $n$ from $\mathbf{w}$ and continue
+                        \EndIf
+                        \State $d_1, d_2, d_3, \mathbf{c}_n \gets$ \Call{SelectTie}{$n$, $H_n$}
+                        \State $z \gets z \cup \{d_1, d_2, d_3, \mathbf{c}_n\}$
+                    \EndFor
+                    \ForAll{$n$ in $\mathbf{c}$}
+                        \State Remove $\mathbf{c}_n$ from $H_n$ and reveal
+                    \EndFor
+                    \State $\mathbf{w} \gets [\mathbf{c}_n \,|\, \mathbf{c}_n \in \max(\mathbf{c})]$
+                \EndWhile
+            \EndIf
+            \If{$|\mathbf{w}| = 1$}
+                \State $W_{\mathbf{w}_1} \gets W_{\mathbf{w}_1} \cup z$
+                \State $z \gets \emptyset$
+            \EndIf
+            \ForAll{$n$ in $\mathbf{p}$}
+                \If{$H_n = \emptyset$}
+                    \State $H_n \gets W_n$
+                    \State $W_n \gets \emptyset$
+                \EndIf
+            \EndFor
+        \EndWhile
+        \EndProcedure
+    \end{algorithmic}
+    \caption{A game of WAR, represented formally in pseudocode.}
+    \label{alg:war}
+\end{figure}
+
+\section{Strategies}
+To further analyze the game, we define strategies. Each strategy is assigned
+to a type of player, such that all players of a given type will play WAR with
+the corresponding strategy.
+
+\subsection{\MinP}
+The \MinP{} strategy will always pick its minimum card when
+given a choice. In other words, for a \MinP{} $n$, $\textsc{SelectCard}(n,\,H_n) = \min(H_n)$.
+In the case of a war (tie), the \MinP{} will discard
+its lowest three cards, and then it selects its next lowest card to play.
+In other words, for a \MinP{} $n$, $\textsc{SelectTie}(n,\,H_n) = (\min_1(H_n),\,\min_2(H_n),\,\min_3(H_n),\,\min_4(H_n))$.
+
+
+\subsection{\MaxP}
+The \MaxP{} strategy will always pick its maximum card when
+given a choice. In other words, for a \MinP{} $n$, $\textsc{SelectCard}(n,\,H_n) = \max(H_n)$.
+In the case of a war (tie), the \MaxP{} strategy will discard
+similarly to a \MinP. The \MaxP{} discards its lowest three cards,
+but it selects its highest card to play.
+In other words, for a \MaxP{} $n$, $\textsc{SelectTie}(n,\,H_n) = (\min_1(H_n),\,\min_2(H_n),\,\min_3(H_n),\,\max(H_n))$.
+
+\subsection{\DP}
+The \DP{} implements a very simple strategy. Whenever the \DP{}
+has the option between a set of choices, it will choose one of the choices
+randomly, where each choice has an equal chance being picked. In other words,
+for a \DP{} $n$, $\textsc{SelectCard}(n, H_n) = \textsc{RandomChoice}(H_n)$.
+The cards to discard in the case of a tie are also picked randomly.
+In other words, for a \DP{} $n$, $\textsc{SelectTie}(n,\,H_n) = \textsc{RandomSample}(4,\,H_n)$.
+
+
+\subsection{\SMPo}
+The \SMPo{} is the first strategy to take its opponents strategy into consideration when making a choice.
+%TODO: Add stuff
+
+\subsection{\SMPt}
+The \SMPt{} is almost identical to the \SMPo, except it is {more,less} risky.
+%TODO: Add stuff
+
+\subsection{\GPA}
+The \GPA{} is a strategy that takes advantage of other deterministic players'
+strategies. When playing against a deterministic player, a \GPA{} player
+will...
+%TODO: Add stuff
+
+\section{Simulation}
+
+\section{Conclusion}
+
 
 \end{document}
