@@ -1,12 +1,12 @@
 from concurrent.futures import ProcessPoolExecutor
-from war import SimpleMindedPlayer, DummiePlayer, play_game
+from war import SimpleMindedPlayer, DummiePlayer, play_game, GeneralPurposeAdversary
 from collections import defaultdict
 
 from functools import update_wrapper
 from math import sqrt
 
-DUMMIES = 100
-THIRTYGAMESPERDUMMIE = 301
+DUMMIES = 200
+THIRTYGAMESPERDUMMIE = 1
 
 class Welford:
     def __init__(self, f):
@@ -41,7 +41,7 @@ def bulk_executor(calls):
     return [f(*args, **kwargs) for f, args, kwargs in calls]
 
 def bulk_dummie_executor(d):
-    return bulk_executor([(play_game, [[SimpleMindedPlayer()]+ [DummiePlayer() for i in range(d)]], dict(logger=nothing, kill_at_uniq=True)) for _ in range(30)])
+    return bulk_executor([(play_game, [[SimpleMindedPlayer()]+ [DummiePlayer() for i in range(d)]], dict(logger=nothing, kill_at_uniq=True)) for _ in range(30*301)])
 
 wf = open("wins.dat", "w")
 rf = open("rounds.dat", "w")
@@ -51,7 +51,7 @@ futures = []
 wins = defaultdict(lambda: defaultdict(int))
 rounds = defaultdict(statlogger)
 
-for d in range(1, DUMMIES + 1):
+for d in range(101, DUMMIES + 1):
     for _ in range(THIRTYGAMESPERDUMMIE):
         futures.append((
                 d,
@@ -65,6 +65,6 @@ for d, f in futures:
         if isinstance(w, SimpleMindedPlayer):
             rounds[d](r)
 
-for d in range(1, DUMMIES + 1):
+for d in range(101, DUMMIES + 1):
     print(d, wins[d][SimpleMindedPlayer] / sum(wins[d].values()), file=wf)
     print(d, rounds[d].mean, rounds[d].stdev, file=rf)
