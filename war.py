@@ -78,6 +78,43 @@ class SimpleMindedPlayer(Player):
                 return [0, 1, 2], len(self.hand) - 1
         return [0, 1, 2], 3
 
+class SimpleMindedPlayer2(Player):
+    def chooseone(self, players):
+        self.hand.sort()
+        max_of_all = max(max(p.hand) for p in players)
+        max_of_me = self.hand[-1]
+        if max_of_me > max_of_all:
+            for i, card in enumerate(self.hand):
+                if card > max_of_all:
+                    return i
+        if max_of_me == max_of_all and len(self.hand) >= 5:
+            return len(self.hand) - 1
+        return 0
+
+    def choosetie(self, players):
+        if not any(p.hand for p in players):
+            # we win this one no matter what happens
+            return [0, 1, 2], 3
+        upper_hand = self.hand[3:]
+        max_of_all = max(max(p.hand) for p in players if p.hand)
+        max_of_me = self.hand[-1]
+        if max_of_me > max_of_all:
+            for i, card in enumerate(upper_hand):
+                if card > max_of_all:
+                    break
+            return [0, 1, 2], 3 + i
+        if max_of_me == max_of_all and len(upper_hand) >= 5:
+            try:
+                lookahead_max = max(
+                    heapq.nlargest(2, p.hand)[1]
+                    for p in players if len(p.hand) > 1)
+            except ValueError:
+                return [0, 1, 2], len(self.hand) - 1
+            my_next_best = heapq.nlargest(2, upper_hand)[1]
+            if my_next_best >= lookahead_max:
+                return [0, 1, 2], len(self.hand) - 1
+        return [0, 1, 2], 3
+
 class GeneralPurposeAdversary(Player):
     def chooseone(self, players):
         self.hand.sort()
