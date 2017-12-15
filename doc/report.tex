@@ -7,6 +7,9 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.15}
+
 \algrenewcommand\algorithmiccomment[1]{$\triangleright$ #1}
 \let\leq=\leqslant
 \let\geq=\geqslant
@@ -221,14 +224,61 @@ for a \DP{} $n$, $\textsc{SelectCard}(n, H_n) = \textsc{RandomChoice}(H_n)$.
 The cards to discard in the case of a tie are also picked randomly.
 In other words, for a \DP{} $n$, $\textsc{SelectTie}(n,\,H_n) = \textsc{RandomSample}(4,\,H_n)$.
 
-
 \subsection{\SMPo}
-The \SMPo{} is the first strategy to take its opponents strategy into consideration when making a choice.
-%TODO: Add stuff
+The \SMPo{} is a computationally simple strategy that preforms well against
+human players unaware of the strategy, as well as against \DP{}s. The strategy
+is defined as follows:
+
+Determination of a normal play (that is, $\textsc{SelectCard}(n,\,H_n)$) is
+defined by the following algorithm:
+\begin{enumerate}
+    \item Compute $S = \{H_{ic} \,|\, \forall j,d\, [H_{ic} >
+        H_{jd}]\}$.
+    \item If $S \ne \emptyset$, play $\min(S)$.
+    \item Otherwise if, $|H_i| \geq 5$, $\exists j,c \,[H_{ic} =
+        \max\left(H_{j}\right) \land \max_2\left(H_{i}\right) \geq
+        \max_2\left(H_{j}\right)]$, then play the corresponding $H_{ic}$.
+    \item Otherwise, play $\min\left(H_{i}\right)$.
+\end{enumerate}
+
+To play a tie ($\textsc{SelectTie}(n,\,H_n)$), follow strategy similar to the
+algorithm described above, but remove 3 smallest cards from hand first to be
+discarded. In other words, for a \SMPo{} $n$,
+\begin{align*}
+     D_n &= \left\{\min_1(H_n),\,\min_2(H_n),\,\min_3(H_n)\right\} \\
+     \textsc{SelectTie}(n,\,H_n) &= \left(D_n,\,\textsc{SelectCard}(n, H_n - D_n)\right)
+\end{align*}
+
+To discover the effectiveness of the \SMPo{} strategy, we wrote a computer
+simulation. This simulation and the outcomes are presented in Section
+\ref{sec:sim}.
 
 \subsection{\SMPt}
-The \SMPt{} is almost identical to the \SMPo, except it is {more,less} risky.
-%TODO: Add stuff
+The \SMPt{} strategy is similar to the \SMPo, except it plays \emph{more} risky
+when deciding weather to enter a potential tie. This strategy is defined as
+follows:
+
+Determination of a normal play (that is, $\textsc{SelectCard}(n,\,H_n)$) is
+defined by the following algorithm:
+\begin{enumerate}
+    \item Compute $S = \{H_{ic} \,|\, \forall j,d\, [H_{ic} >
+        H_{jd}]\}$.
+    \item If $S \ne \emptyset$, play $\min(S)$.
+    \item Otherwise if, $|H_i| \geq 5$, then play $\max(H_i - S)$.
+    \item Otherwise, play $\min\left(H_{i}\right)$.
+\end{enumerate}
+
+To play a tie ($\textsc{SelectTie}(n,\,H_n)$), follow strategy similar to the
+algorithm described above, but remove 3 smallest cards from hand first to be
+discarded. In other words, for a \SMPo{} $n$,
+\begin{align*}
+     D_n &= \left\{\min_1(H_n),\,\min_2(H_n),\,\min_3(H_n)\right\} \\
+     \textsc{SelectTie}(n,\,H_n) &= \left(D_n,\,\textsc{SelectCard}(n, H_n - D_n)\right)
+\end{align*}
+
+To discover the effectiveness of the \SMPt{} strategy, we wrote a computer
+simulation. This simulation and the outcomes are presented in Section
+\ref{sec:sim}.
 
 \subsection{\GPA}
 The \GPA{} is a strategy that takes advantage of other deterministic players'
@@ -237,8 +287,113 @@ will...
 %TODO: Add stuff
 
 \section{Simulation}
+\label{sec:sim}
+
+\begin{figure}
+    \begin{center}
+    \begin{tikzpicture}
+    \begin{axis}[
+            title=SMP1 vs. $N$ DPs: Win Ratio,
+            xlabel={Number of DPs ($N$)},
+            ylabel={SMP1 Win Ratio},
+    ]
+    \addplot
+    [blue] table {smp1-data/wins.dat};
+    \end{axis}
+    \end{tikzpicture}
+    \end{center}
+\end{figure}
+
+\begin{figure}
+    \begin{center}
+    \begin{tikzpicture}
+    \begin{axis}[
+            title=SMP2 vs. $N$ DPs: Win Ratio,
+            xlabel={Number of DPs ($N$)},
+            ylabel={SMP2 Win Ratio},
+    ]
+    \addplot
+    [blue] table {smp2-data/wins.dat};
+    \end{axis}
+    \end{tikzpicture}
+    \end{center}
+\end{figure}
+
+\begin{figure}
+    \begin{center}
+    \begin{tikzpicture}
+    \begin{axis}[
+            title=SMP1 vs. $N$ DPs: Mean Rounds Played,
+            xlabel={Number of DPs ($N$)},
+            ylabel={Mean Rounds Played},
+    ]
+    \addplot
+    [red] table {smp1-data/mrounds.dat};
+    \end{axis}
+    \end{tikzpicture}
+    \end{center}
+\end{figure}
+
+\begin{figure}
+    \begin{center}
+    \begin{tikzpicture}
+    \begin{axis}[
+            title=SMP1 vs. $N$ DPs: Variance of Rounds Played,
+            xlabel={Number of DPs ($N$)},
+            ylabel={$\sigma$ (Rounds)},
+    ]
+    \addplot
+    [green] table {smp1-data/vrounds.dat};
+    \end{axis}
+    \end{tikzpicture}
+    \end{center}
+\end{figure}
+
+\begin{figure}
+    \begin{center}
+    \begin{tikzpicture}
+    \begin{axis}[
+            title=SMP2 vs. $N$ DPs: Win Ratio,
+            xlabel={Number of DPs ($N$)},
+            ylabel={SMP2 Win Ratio},
+    ]
+    \addplot
+    [blue] table {smp2-data/wins.dat};
+    \end{axis}
+    \end{tikzpicture}
+    \end{center}
+\end{figure}
+
+\begin{figure}
+    \begin{center}
+    \begin{tikzpicture}
+    \begin{axis}[
+            title=SMP2 vs. $N$ DPs: Mean Rounds Played,
+            xlabel={Number of DPs ($N$)},
+            ylabel={Mean Rounds Played},
+    ]
+    \addplot
+    [red] table {smp2-data/mrounds.dat};
+    \end{axis}
+    \end{tikzpicture}
+    \end{center}
+\end{figure}
+
+\begin{figure}
+    \begin{center}
+    \begin{tikzpicture}
+    \begin{axis}[
+            title=SMP2 vs. $N$ DPs: Variance of Rounds Played,
+            xlabel={Number of DPs ($N$)},
+            ylabel={$\sigma$ (Rounds)},
+    ]
+    \addplot
+    [green] table {smp2-data/vrounds.dat};
+    \end{axis}
+    \end{tikzpicture}
+    \end{center}
+\end{figure}
 
 \section{Conclusion}
-
 
 \end{document}
